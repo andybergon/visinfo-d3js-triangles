@@ -1,0 +1,85 @@
+<!DOCTYPE	html>
+<html>
+	<head>
+		<title>Vis Info Individual Project</title>
+		<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+	</head>
+	<body>
+		<script>
+    var svgWidth = 1200;
+    var svgHeight = 600;
+
+    var svg = d3.select('body')
+                .append('svg')
+                .attr("style", "outline: thin solid black;")
+                .attr({'width': svgWidth,'height': svgHeight});
+
+    var triangles = d3.range(20).map(createRandomTriangle);
+
+    function createRandomTriangle() {
+      var triangle = {
+        scaleFactor: 500 + Math.random() * 20000,
+        color: randomColor(),
+        // creation in boundaries
+        x: Math.random() * (svgWidth - 100 - 100) + 100 ,
+        y: Math.random() * (svgHeight - 100 - 100) + 100
+      };
+      return triangle;
+    }
+
+    function randomColor() {
+      // colori alternativi
+      // var rnd = Math.floor(Math.random() * 21); // interi 0-20
+      // var color = d3.scale.category20().range()[rnd];
+      // return color;
+      return "hsl(" + Math.random() * 360 + ", 100%, 50%)"
+    }
+
+    var createPath = function(triangle) {
+      return d3.svg.symbol().type('triangle-up').size(triangle.scaleFactor)();
+    }
+
+    var initialPosition = function(triangle) {
+      var translate = "translate(" + triangle.x + "," + triangle.y + ")";
+      return translate;
+    }
+
+    var drag = d3.behavior.drag().on("drag", dragmove);
+
+    function dragmove(d) {
+      var boundingBox = this.getBBox();
+      var w = boundingBox.width;
+      var h = boundingBox.height;
+
+      d.x += d3.event.dx;
+      d.y += d3.event.dy;
+
+      if (inBoundaries(d.x, d.y, w/2, h/2)) {
+        d3.select(this).attr("transform", function(d,i){
+              return "translate(" + [ d.x,d.y ] + ")"
+          });
+      }
+    }
+
+    function inBoundaries(x, y, w, h) {
+      return (x >= (0 + w)
+        && x <= (svgWidth - w))
+        && (y >= (0 + h)
+        && y <= (svgHeight - h));
+    }
+
+    var paths = svg
+      .selectAll('path')
+      .data(triangles)
+      .enter()
+      .append('path')
+      .attr('d', createPath)
+      .attr('transform', initialPosition)
+      .attr('fill', function(d) { return d.color; })
+      .attr("fill-opacity", .9)
+      .style('stroke', 'black')
+      .style('stroke-width', 3)
+      .call(drag);
+    </script>
+	</body>
+</html>
